@@ -16,9 +16,27 @@
     </head>
     <body>
         <center>
-            <div>
+            <div class="btn btn-success heading">
                 <h1>PING_PONG</h1>
+                <button class="btn btn-success" data-toggle="modal fade" data-target="#myModal">instruções</button>
             </div>
+            <div class="modal-dialog"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal">&times;</button>
+                    <h3>ser ou não ser</h3>
+                </div>
+                <div class="modal-body">
+                    <ol></ol>
+                </div>
+            </div>
+            <div id="canvas">
+
+            </div>
+            
+
+
+            <button onclick="startGame()"></button>
         </center>
         <script src="main.js"></script>
     </body>

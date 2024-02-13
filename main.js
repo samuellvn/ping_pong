@@ -29,12 +29,15 @@ ball = {
 }
 
 function setup(){
-  canvas =  createCanvas(700,550);
+  canvas=createCanvas(700,550)
+  canvas.center();
+  canvas.parent("canvas");
+  video=createCapture(VIDEO);
+  video.hide();
 }
 
-
 function draw(){
-
+  image(video, 0, 0, 700, 550);
   background(0); 
 
   fill("black");

@@ -1,26 +1,19 @@
-paddle1 = 10;
-paddle2 = 10;
-
-paddle1X = 10;
-
-paddle1Y = '';
-paddle2Y = 685;
-
-paddle1Height = 110;
-paddle2Height = 70;
-
-score1 = 0;
-score2 = 0;
 
 
-playerscore = 0;
-pcscore = 0;
 
-audio1 = '';
+var paddle2 =10,paddle1=10;
 
+var paddle1X = 10,paddle1Height = 110;
+var paddle2Y = 685,paddle2Height = 70;
 
-//Coordenadas x, y, raio, velocidade em x e velocidade em y
-ball = {
+var score1 = 0, score2 =0;
+var paddle1Y;
+
+var  playerscore =0;
+
+var pcscore =0;
+//bola x e y, e velocidade x, velocidade y e raio
+var ball = {
     x:350/2,
     y:480/2,
     r:20,
@@ -28,17 +21,53 @@ ball = {
     dy:3
 }
 
+rightWristY = 0;
+rightWristX = 0;
+scoreRightWrist = 0;
+
+game_status="";
+
+ 
+
 function setup(){
-  canvas=createCanvas(700,550)
-  canvas.center();
-  canvas.parent("canvas");
-  video=createCapture(VIDEO);
-  video.hide();
+var canvas =  createCanvas(700,600);
+canvas.parent('canvas');
+
+video = createCapture(VIDEO);
+video.size(700, 600);
+video.hide();
+
+poseNet = ml5.poseNet(video, modelLoaded);
+poseNet.on('pose', gotPoses);
+}
+
+function modelLoaded() {
+  console.log('PoseNet Is Initialized');
+}
+
+function gotPoses(results)
+{
+  if(results.length > 0)
+  {
+
+    rightWristY = results[0].pose.rightWrist.y;
+    rightWristX = results[0].pose.rightWrist.x;
+    scoreRightWrist =  results[0].pose.keypoints[10].score;
+    console.log(scoreRightWrist);
+  }
+}
+
+function startGame()
+{
+  game_status="start" //defina o valor da variável de status criada na etapa 1 para "start".
+  document.getElementById("status").innerHTML= "Jogo Carregado";
 }
 
 function draw(){
-  image(video, 0, 0, 700, 550);
+if(game_status == "start")
+{
   background(0); 
+  image(video, 0, 0, 700, 600);
 
   fill("black");
   stroke("black");
@@ -48,52 +77,61 @@ function draw(){
   stroke("black");
   rect(0,0,20,700);
 
-  //Chamar a função paddleInCanvas() 
-  paddleInCanvas();
-
-  //Raquete do jogador
-  fill(250,0,0);
-  stroke(0,0,250);
-  strokeWeight(0.5);
-  paddle1Y = mouseY; 
-  rect(paddle1X,paddle1Y,paddle1,paddle1Height,100);
+  if(scoreRightWrist > 0.2)
+  {
+    fill("red");
+    stroke("red");
+    circle(rightWristX, rightWristY, 30);
+  }
 
 
-  //Raquete do computador
-  fill("#FFA500");
-  stroke("#FFA500");
-  paddle2y =ball.y-paddle2Height/2;  
-  rect(paddle2Y,paddle2y,paddle2,paddle2Height,100);
-
-  //Chamar a função midline()
-  midline();
-
-  //Chamar a função drawScore() 
-  drawScore();
-
-  //Chamar a função models()  
-  models();
-
-  //Chamar a função move() (muito importante para o jogo)
-  move();
-}
+    //chamar a função paddleInCanvas
+    paddleInCanvas();
+        
+    //raquete ta esquerda 
+    fill(250,0,0);
+    stroke(0,0,250);
+    strokeWeight(0.5);
+    paddle1Y = rightWristY; 
+    rect(paddle1X,paddle1Y,paddle1,paddle1Height,100);
 
 
+    //raquete do computador
+    fill("#FFA500");
+    stroke("#FFA500");
+    var paddle2y =ball.y-paddle2Height/2;  rect(paddle2Y,paddle2y,paddle2,paddle2Height,100);
+    
+    //chamar a função midline
+    midline();
+    
+    //chamar a função drawScore 
+    drawScore();
 
-//Função reset() para quando a bola não colidir com a raquete
+    //chamar a função models  
+    models();
+
+    //chamar a função move, que é muito importante
+    move();
+
+    }
+
+  }
+
+
+
+//função reset quando a bola não entra no contato com a raquete
 function reset(){
    ball.x = width/2+100,
    ball.y = height/2+100;
    ball.dx=3;
-   ball.dy =3;
-   
+   ball.dy =3;   
 }
 
 
-//Função midline() para desenhar uma linha no centro do canvas
+//função midLine desenha uma linha no centro
 function midline(){
     for(i=0;i<480;i+=10) {
-    y = 0;
+    var y = 0;
     fill("white");
     stroke(0);
     rect(width/2,y+i,10,480);
@@ -101,20 +139,20 @@ function midline(){
 }
 
 
-//Funçao drawScore() para mostra o placar
+//função drawScore exibe as pontuações
 function drawScore(){
     textAlign(CENTER);
     textSize(20);
-    fill("red");
+    fill("white");
     stroke(250,0,0)
     text("Jogador:",100,50)
-    text(playerscore,180,50);
+    text(playerscore,140,50);
     text("Computador:",500,50)
-    text(pcscore,595,50)
+    text(pcscore,555,50)
 }
 
 
-//Função muito importante para o jogo
+//função muito importante deste jogo
 function move(){
    fill(50,350,0);
    stroke(255,0,0);
@@ -127,51 +165,54 @@ function move(){
    }
   if (ball.x-2.5*ball.r/2< 0){
   if (ball.y >= paddle1Y&& ball.y <= paddle1Y + paddle1Height) {
-    ball.dx = -ball.dx+0.5;
-    playerscore++;
+    ball.dx = -ball.dx+0.5; 
+    
   }
   else{
     pcscore++;
+    
     reset();
     navigator.vibrate(100);
   }
 }
-
 if(pcscore ==4){
     fill("#FFA500");
     stroke(0)
     rect(0,0,width,height-1);
     fill("white");
     stroke("white");
-    textSize(25)
-    text("Game Over!☹☹",width/2,height/2);
+    textSize(25);
+    text("Fim de jogo!",width/2,height/2);
     text("Recarregue a página!",width/2,height/2+30)
     noLoop();
     pcscore = 0;
-}
+ }
    if(ball.y+ball.r > height || ball.y-ball.r <0){
        ball.dy =- ball.dy;
    }   
 }
 
 
-//Largura e altura do canvas e velocidade da bola 
+//velocidade da bola, largura e altura da tela
 function models(){
     textSize(18);
-    fill('red');
+    fill(255);
     noStroke();
-    text("Largura:"+width,195,15);
-    text("Velocidade:"+abs(ball.dx),65,15);
-    text("Altura:"+height,300,15)
+    text("Largura:"+width,135,15);
+    text("Velocidade:"+abs(ball.dx),50,15);
+    text("Altura:"+height,235,15)
 }
 
 
-//Esta função ajuda a evitar que a raquete saia do canvas
+//esta função ajuda a raquete a não sair tela
 function paddleInCanvas(){
-  if(mouseY+paddle1Height > height){
-    mouseY=height-paddle1Height;
+  if(paddle1Y+paddle1Height > height){
+    paddle1Y=height-paddle1Height;
   }
-  if(mouseY < 0){
-    mouseY =0;
-  }  
+  if(paddle1Y < 0){
+    paddle1Y =0;
+  }
+ 
+  
 }
+

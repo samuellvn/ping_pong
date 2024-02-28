@@ -33,6 +33,11 @@ function setup(){
 var canvas =  createCanvas(700,600);
 canvas.parent('canvas');
 
+function preload(){
+  ball_touch_paddel=loadSound("ball_touch_paddel.wav");
+  missed=loadSound("missed.wav");
+}
+
 video = createCapture(VIDEO);
 video.size(700, 600);
 video.hide();
@@ -117,7 +122,11 @@ if(game_status == "start")
 
   }
 
-
+function restart(){
+  loop();
+  pcscore=0;
+  playerscore=0;
+}
 
 //função reset quando a bola não entra no contato com a raquete
 function reset(){
@@ -166,11 +175,12 @@ function move(){
   if (ball.x-2.5*ball.r/2< 0){
   if (ball.y >= paddle1Y&& ball.y <= paddle1Y + paddle1Height) {
     ball.dx = -ball.dx+0.5; 
-    
+    ball_touch_paddel.play();
+    playerscore++;
   }
   else{
     pcscore++;
-    
+    missed.play();
     reset();
     navigator.vibrate(100);
   }
@@ -182,8 +192,8 @@ if(pcscore ==4){
     fill("white");
     stroke("white");
     textSize(25);
-    text("Fim de jogo!",width/2,height/2);
-    text("Recarregue a página!",width/2,height/2+30)
+    text("Game over",width/2,height/2);
+    text("Cligue no botão Reiniciar para jogar novamente",width/2,height/2+30)
     noLoop();
     pcscore = 0;
  }
